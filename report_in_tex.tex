@@ -423,7 +423,7 @@
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-In this paper, we apply machine learning and time series analysis to the problem of classifying and forecasting crime incidents in San Francisco. Our dataset originates from a Kaggle competition\cite{1}. Based on existing researches on these problems, we employ Logistic Regression and VAR(p) models respectively. The classification problem result demonstrates high challenge as our results across all the 39 crime categories achieved the accuracy of 32.67\%. For the time series analysis, we revealed correlations of occurrences of difference crime categories. And the VAR(p) model can forecast the trend of number of certain crimes. We also involved demographic data for classification problem, which contributed to a slight improvement to accuracy. With richer and more up-to-date data, our results might be further improved.
+In this paper, we apply machine learning and time series analysis to the problem of classifying and forecasting crime incidents in San Francisco. Our dataset originates from a Kaggle competition \cite{1}. Based on existing researches on these problems, we employ Logistic Regression and VAR(p) models respectively. The classification problem result demonstrates high challenge as our results across all the 39 crime categories achieved the accuracy of 32.67\%. For the time series analysis, we revealed correlations of occurrences of difference crime categories. And the VAR(p) model can forecast the trend of number of certain crimes. We also involved demographic data for classification problem, which contributed to a slight improvement to accuracy. With richer and more up-to-date data, our results might be further improved.
 \end{abstract}
 
 % no keywords
@@ -454,23 +454,85 @@ Our primary dataset is a training set obtained from Kaggle, which includes 878,0
 Each record in our dataset correspond to a particular crime incident, which includes following fields:
 \begin{itemize}
   \item Date and timestamp of the crime
+  \item Category of the crime. Which is the label to be predicted in test data set.
+  \item Detailed description of the crime (only provided in train data)
   \item Day of the week of the incident
-  \item The third etc \ldots
+  \item Name of the Police Department District the took charge of the crime.
+  \item Resolution, which means how the crime was resolved(booked, arrested or resolved, etc)
+  \item Approximate street address of the crime
+  \item Longitude
+  \item Latitude
 \end{itemize}
-
+Among these fields, resolution is discarded as it only exist in train data.
 \subsection{Preprocessing}
 
 \section{Methods}
+\subsection{Naive Bayes}
+\subsection{Logistic Regression}
+\subsection{Random Forest}
+\subsection{Adaboost }
+\subsection{Time Series}
+A time series is a sequence of data points with continuous time interval and successive measurements made over a time interval. Time series analysis comprises approaches for extracting meaningful statistics and other characteristics of the data. And time series forecasting is using a model to predict future values based on previously recorded data. It has been applied to crime analysis for decades \cite{2}.
+
+VAR models (vector autoregressive models) are desiged for multivariate time series. It view each variable as a linear combination of past lags of itself and past lags of other variables. The variables(number of crimes in our case) are collected in a 39*1 vector. At time $t$, define the vector as $y_t$, a  $p$-th order VAR, namely VAR(p), is $$y_t = c + A_1y_{t-1} + A_2y_{t-2} + ... A_py_{t-p} + e_t$$ where $y_{t-j}$ is called the $j-th$ lag of y, c is constant intercept and $e_t$ is an error term. The VAR model assumes the data is \textbf{weakly stationary} and above attributes of $e_t$ must hold
+\begin{enumerate}
+	\item $E(e_t) = 0$, zero mean error
+	\item $E(e_t{e_t}') = \Omega$, the contemporaneous covariance matrix of $e_t$ is positive semidefinite.
+	\item $E(e_t{e_{t-k}}') = 0$, for any positive k. There is no series correlation in error term.
+\end{enumerate}
+An Augmented Dickey-Fuller unit root test \cite{3} is often employ to test stationarity.  Using the library from statsmodel \cite{4} , we performed the ADF test on each category with constant, linear and quadratic trend.  We chose BIC(Bayesian Information Criterion) for penalty strictness. (results in Fig 1). There are 23 categories with scores below 5\% level, and we selected these categories for time series model construction.
+
 \begin{figure}%[H]
 \begin{center}
-\includegraphics [width=0.48\textwidth]{pics/5.png}
-\caption{Depth Sensor in Xbox 360}
+\includegraphics [width=0.48\textwidth]{pics/adf_test.png}
+\caption{ADF test score against 5\% and 10\% threshold }
 \end{center}
 \end{figure}
 
-\subsubsection{Depth map computation}
+\section{Experiments}
+\subsection{Time Series}
+\subsubsection{Motivations}
+Based on the stationarity test in previous chapter, the VAR{p} model is suitable for finding trends in the crime dataset. We selected 28 categories with low ADF score, and computed the pair-wise correlation among them. Following picture shows the heat-map of correlation matrix which computes the Pearson's r. In the heat-map, we can find large positively correlation coefficients, for example, BURGLARY \& ASSAULT, as well as negative coefficients like DRIVING UNDER THE INFLUENCE \& VEHICLE THEFT.
+\begin{figure}%[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/heat_map_time_series.png}
+\caption{Heatmap of time series correlation matrix }
+\end{center}
+\end{figure}
+Auto-correlation function(ACF) and Cross-correlation function(CCF) are also effective approaches to reveal statistical connections. Following picture demonstrate the CCF between category 'DRIVING UNDER THE INFLUENCE' and 'VEHICLE THEFT'. The increase of the first category precedes the decrease of the other. These kinds of correlations are further exploited in the correlation matrix.
+\begin{figure}%[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/ccf_DRIVING_UNDER_THE_INFLUENCE_VEHICLE_THEFT.png}
+\caption{CCF between 'DRIVING UNDER THE INFLUENCE' and 'VEHICLE THEFT'}
+\end{center}
+\end{figure}
 
-example of table
+\subsubsection{Model Selection}
+Choosing the order $p$ for VAR(p) model is a feature selection problem. We tried different values of $p$ under two penalty criterions AIC(Akaike Information Criterion) and BIC. As is shown in following picture, with AIC, the penalty score is minimal when $p=2$. For BIC, the penalty is 30.88 at $p=1$ and 30.89 at $p=2$.
+\begin{figure}%[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/aic_bic.png}
+\caption{aic/bic}
+\end{center}
+\end{figure}
+
+\subsubsection{Fitting Model}
+We choose $p=2$ and AIC penalty criterion for VAR(p) model fitting. And tried the model on "ASSAULT" time series. The first 40 time units were used for fitting, and the last 10 were forecasted. As the following picture shows, the model is not able to capture the exact quarterly variation, but it predicts the trend of increase or decrease in crime number.
+\begin{figure}%[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/assault_forecast.png}
+\caption{Forecast of 'ASSAULT'}
+\end{center}
+\end{figure}
+
+\section{Related Work}
+
+\section{Conclusion}
+
+\section{Ackknowlegement}
+I would like to deeply thank Professor D. Stott Parker for his advice on feature selection and preprocessing, which facilitated my preprocessing with demographic data. 
+
+
 \begin{table}[h]
 \caption{Logfile Format}\centering
 \begin{tabular}{|l|l|c|l|l|}
@@ -481,39 +543,28 @@ example of table
 (Joint19) JointType    & X    & Y                              & Z        & TrackingState        \\ \hline
 \end{tabular}
 \end{table}
-end example
 
 \begin{lstlisting}
-float calc_offset_with_angle(Skeleton s1, Skeleton s2){ 
-	float TotalOffset = 0;
-	foreach(Angle A1 in s1){
-		Let A2 be the cooresponding Angle in s2.
-	TotalOffset += Weight_of_A1
- * abs(A1 - A2)
-}
-	return TotalOffset/NumberOffset
+float example code(Skeleton s1, Skeleton s2){ 
+	return null
 }
 \end{lstlisting}
-
-$$\textbf{w} * x  - b = 0$$
-example of inline formula: $(\textbf{w} * x' - b)$ end example
-
-\section{EXPERIMENT}
-
-\section{RELATED WORK}
-
-\section{CONCLUSION}
-
-\section{ACKNOWLEDGMENT}
-I would like to deeply thank Professor D. Stott Parker for his advice on feature selection and preprocessing, which facilitated my preprocessing with demographic data. 
 
 \begin{thebibliography}{1}
 
 \bibitem{1}
 https://www.kaggle.com/c/sf-crime
 
-\end{thebibliography}
+\bibitem{2}
+Greenberg, David F. "Time series analysis of crime rates." Journal of Quantitative Criminology 17.4 (2001): 291-327.
 
+\bibitem{3}
+Said, Said E., and David A. Dickey. "Testing for unit roots in autoregressive-moving average models of unknown order." Biometrika 71.3 (1984): 599-607.
+
+\bibitem{4}
+Seabold, Skipper, and Josef Perktold. "Statsmodels: Econometric and statistical modeling with python." Proceedings of the 9th Python in Science Conference. 2010.
+
+\end{thebibliography}
 
 
 \end{document}
