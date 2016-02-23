@@ -465,6 +465,53 @@ Each record in our dataset correspond to a particular crime incident, which incl
 \end{itemize}
 Among these fields, resolution is discarded as it only exist in train data.
 \subsection{Preprocessing}
+While \url{http://datasf.org} also includes similar data, our dataset from Kaggle is more selected as there is no empty cell in any fields. However, some fields contain unreasonable values due to probably wrong registration. Some numeric fields need to be scaled while some fields are not yet numeric. To transform the original data to suitable input of classification algorithms, we performed feature engineering described below.
+\subsubsection{Outlier removal}
+The following pictures are scatter plots of scaled longitude(X) and latitude(Y). There are in total 67 outlier points, all of their latitudes are beyond the border of San Francisco. After removal of these outliers, the scatter plot fits the territory of San Francisco.
+\begin{figure}[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/outliers.png}
+\caption{Scatter plot of crime locations before and after outlier removal}
+\end{center}
+\end{figure}
+
+\subsubsection{Demographic data}
+Our demographic data is based on US Census from 2006 to 2010. It includes demographic data in each neighborhood of San Francisco, covering race, education, income and housing characteristics. Following heat displayed the correlation among the frequency of some typical crime categories and demographic statistics. For example, poverty rate is positively correlated to most crime categories, especially embezzlement; while high population density tend to relate to drug use and disorderly conduct.
+
+One challenge of employing demographic data is correctly matching it the the crime location as the crime dataset does not include neighborhood. Our solution was to download the map data of San Francisco, where each neighborhood is represented as a polygon. Following pseudo-code shows how we located each neighborhood.
+\begin{lstlisting}
+bool getNeighborhood(Lang, Lat, Polygon){ 
+	//For acceleration
+	if (Lang, Lat) in Polygon-Bounding-Box{
+		if (Lang, Lat) in Polygon{
+			return True
+		}
+	}
+	return False
+}
+\end{lstlisting}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/nh_category_corr.png}
+\caption{heat map of correlation among crime amount and demographic data}
+\end{center}
+\end{figure}
+
+\subsubsection{Feature enrichment}
+For timestamps in dataset, we parsed the month\/date-of-year, hour-of-day from them. We also added season, day/night as new fields.
+
+Another feature enrichment approach is computing the log-odds defined below, where c is crime category.
+$$logodds\_c = log(\frac{c\_counts}{len(train\_data)}) - log(1 - \frac{c\_counts}{len(train\_data)})$$\\ There are around 23,000 addresses in the train dataset, which is small compared with number of crime entries. 
+
+\subsubsection{Scaling and Transformation}
+Some fields are skewed, with log transformation their distribution are more close to Gaussian Distribution. Following figure shows the log transformation of percapita-income. Similar transformations are performed on median-rent and population density.
+\begin{figure}[H]
+\begin{center}
+\includegraphics [width=0.48\textwidth]{pics/percapita_income_log.png}
+\caption{}
+\end{center}
+\end{figure}
 
 \section{Methods}
 \subsection{Naive Bayes}
@@ -482,7 +529,7 @@ VAR models (vector autoregressive models) are desiged for multivariate time seri
 \end{enumerate}
 An Augmented Dickey-Fuller unit root test \cite{3} is often employ to test stationarity.  Using the library from statsmodel \cite{4} , we performed the ADF test on each category with constant, linear and quadratic trend.  We chose BIC(Bayesian Information Criterion) for penalty strictness. (results in Fig 1). There are 23 categories with scores below 5\% level, and we selected these categories for time series model construction.
 
-\begin{figure}%[H]
+\begin{figure}[H]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/adf_test.png}
 \caption{ADF test score against 5\% and 10\% threshold }
@@ -493,14 +540,14 @@ An Augmented Dickey-Fuller unit root test \cite{3} is often employ to test stati
 \subsection{Time Series}
 \subsubsection{Motivations}
 Based on the stationarity test in previous chapter, the VAR{p} model is suitable for finding trends in the crime dataset. We selected 28 categories with low ADF score, and computed the pair-wise correlation among them. Following picture shows the heat-map of correlation matrix which computes the Pearson's r. In the heat-map, we can find large positively correlation coefficients, for example, BURGLARY \& ASSAULT, as well as negative coefficients like DRIVING UNDER THE INFLUENCE \& VEHICLE THEFT.
-\begin{figure}%[H]
+\begin{figure}[H]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/heat_map_time_series.png}
 \caption{Heatmap of time series correlation matrix }
 \end{center}
 \end{figure}
 Auto-correlation function(ACF) and Cross-correlation function(CCF) are also effective approaches to reveal statistical connections. Following picture demonstrate the CCF between category 'DRIVING UNDER THE INFLUENCE' and 'VEHICLE THEFT'. The increase of the first category precedes the decrease of the other. These kinds of correlations are further exploited in the correlation matrix.
-\begin{figure}%[H]
+\begin{figure}[H]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/ccf_DRIVING_UNDER_THE_INFLUENCE_VEHICLE_THEFT.png}
 \caption{CCF between 'DRIVING UNDER THE INFLUENCE' and 'VEHICLE THEFT'}
@@ -509,7 +556,7 @@ Auto-correlation function(ACF) and Cross-correlation function(CCF) are also effe
 
 \subsubsection{Model Selection}
 Choosing the order $p$ for VAR(p) model is a feature selection problem. We tried different values of $p$ under two penalty criterions AIC(Akaike Information Criterion) and BIC. As is shown in following picture, with AIC, the penalty score is minimal when $p=2$. For BIC, the penalty is 30.88 at $p=1$ and 30.89 at $p=2$.
-\begin{figure}%[H]
+\begin{figure}[H]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/aic_bic.png}
 \caption{aic/bic}
@@ -543,12 +590,6 @@ I would like to deeply thank Professor D. Stott Parker for his advice on feature
 (Joint19) JointType    & X    & Y                              & Z        & TrackingState        \\ \hline
 \end{tabular}
 \end{table}
-
-\begin{lstlisting}
-float example code(Skeleton s1, Skeleton s2){ 
-	return null
-}
-\end{lstlisting}
 
 \begin{thebibliography}{1}
 
