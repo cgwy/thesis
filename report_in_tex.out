@@ -7,17 +7,20 @@
 \BOOKMARK [3][-]{subsubsection.2.2.3}{Feature enrichment}{subsection.2.2}% 7
 \BOOKMARK [3][-]{subsubsection.2.2.4}{Scaling and Transformation}{subsection.2.2}% 8
 \BOOKMARK [1][-]{section.3}{Methods}{}% 9
-\BOOKMARK [2][-]{subsection.3.1}{Naive Bayes}{section.3}% 10
-\BOOKMARK [2][-]{subsection.3.2}{Logistic Regression}{section.3}% 11
-\BOOKMARK [2][-]{subsection.3.3}{Random Forest}{section.3}% 12
-\BOOKMARK [2][-]{subsection.3.4}{Adaboost }{section.3}% 13
-\BOOKMARK [2][-]{subsection.3.5}{Time Series}{section.3}% 14
+\BOOKMARK [2][-]{subsection.3.1}{Classification Algorithms}{section.3}% 10
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Logistic Regression}{subsection.3.1}% 11
+\BOOKMARK [3][-]{subsubsection.3.1.2}{Random Forest}{subsection.3.1}% 12
+\BOOKMARK [3][-]{subsubsection.3.1.3}{Gradient Boost Tree}{subsection.3.1}% 13
+\BOOKMARK [2][-]{subsection.3.2}{Time Series}{section.3}% 14
 \BOOKMARK [1][-]{section.4}{Experiments}{}% 15
-\BOOKMARK [2][-]{subsection.4.1}{Time Series}{section.4}% 16
-\BOOKMARK [3][-]{subsubsection.4.1.1}{Motivations}{subsection.4.1}% 17
-\BOOKMARK [3][-]{subsubsection.4.1.2}{Model Selection}{subsection.4.1}% 18
-\BOOKMARK [3][-]{subsubsection.4.1.3}{Fitting Model}{subsection.4.1}% 19
-\BOOKMARK [1][-]{section.5}{Related Work}{}% 20
-\BOOKMARK [1][-]{section.6}{Conclusion}{}% 21
-\BOOKMARK [1][-]{section.7}{Ackknowlegement}{}% 22
-\BOOKMARK [1][-]{section*.1}{References}{}% 23
+\BOOKMARK [2][-]{subsection.4.1}{Classification}{section.4}% 16
+\BOOKMARK [3][-]{subsubsection.4.1.1}{Tuning Random forest}{subsection.4.1}% 17
+\BOOKMARK [3][-]{subsubsection.4.1.2}{Tuning GRBT}{subsection.4.1}% 18
+\BOOKMARK [2][-]{subsection.4.2}{Time Series}{section.4}% 19
+\BOOKMARK [3][-]{subsubsection.4.2.1}{Motivations}{subsection.4.2}% 20
+\BOOKMARK [3][-]{subsubsection.4.2.2}{Model Selection}{subsection.4.2}% 21
+\BOOKMARK [3][-]{subsubsection.4.2.3}{Fitting Model}{subsection.4.2}% 22
+\BOOKMARK [1][-]{section.5}{Related Work}{}% 23
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 24
+\BOOKMARK [1][-]{section.7}{Ackknowlegement}{}% 25
+\BOOKMARK [1][-]{section*.1}{References}{}% 26
