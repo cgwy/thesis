@@ -423,7 +423,7 @@
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-In this paper, we apply machine learning and time series analysis to the problem of classifying and forecasting crime incidents in San Francisco. Our dataset originates from a Kaggle competition \cite{1}. Based on existing researches on these problems, we employ Logistic Regression and VAR(p) models respectively. The classification problem result demonstrates high challenge as our results across all the 39 crime categories achieved the accuracy of 32.67\%. For the time series analysis, we revealed correlations of occurrences of difference crime categories. And the VAR(p) model can forecast the trend of number of certain crimes. We also involved demographic data for classification problem, which contributed to a slight improvement to accuracy. With richer and more up-to-date data, our results might be further improved.
+In this paper, we apply machine learning and time series analysis to the problem of classifying and forecasting crime incidents in San Francisco. Our dataset originates from a Kaggle competition \cite{1}. Based on existing researches on these problems, we employ Logistically challenging Regression and VAR(p) models respectively. The classification problem requires classifying crime category from 39 options based on spatio-temporal data. Our result achieved 33.76\% accuracy, which ranked top 5\% on Kaggle's leaderboard. For the time series analysis, we revealed correlations among occurrences of difference crime categories. And the VAR(p) model can forecast the trend of number of certain crimes. We also involved demographic data for classification problem, which contributed to a slight improvement to accuracy. With richer and more up-to-date data, our results might be further improved.
 \end{abstract}
 
 % no keywords
@@ -444,12 +444,12 @@ In this paper, we apply machine learning and time series analysis to the problem
 \section{Introduction}
 Crime activities have always been threat to public safety, and researches on criminals have long been limited within the realm social science. With the huge volume of existing crime datasets and the advent of robust machine learning and statistical technologies, we seek to predictively analyze crime incidents. Our vision is to help police, public policy makers as well as individuals understand crime patterns and take more effective measures to prevent crimes.
 
-In our project, we combined spatio-temporal and demographic data to predict which category of crime has the largest possibility to occur, given a timestamp, location and demographics of the surrounding area. The inputs to our classification algorithm include time (hour, day, year), location(street, latitude, longitude and police district) and demographic data(population density, median house value, poverty rate and median per capita income). The output is the type of crime that  is most likely to have occurred. We performed complicated feature engineering to enrich predictors. We also tried various classification algorithms, among which Logistic Regression achieved highest accuracy.
+In our project, we combined spatio-temporal and demographic data to predict which category of crime has the largest possibility to occur, given a timestamp, location and demographics of the surrounding area. The inputs to our classification algorithm include time (hour, day, year), location(street, latitude, longitude and police district) and demographic data(population density, median house value, poverty rate and median per capita income). The output is the type of crime that  is most likely to have occurred. We performed complicated feature engineering to enrich predictors. We also tried various classification algorithms, among which Random Forest achieved highest accuracy.
 
-For time series analysis, we  applied vector autogression model to capture the interdependencies among multiple categories of crime time series. We tested for the optimal lag $p$ for VAR(p) model. The input to VAR(p) is spatio-temporal data; the output is the time series model. For some crime categories, this model can reveal the trends of its occurrence.
+For time series analysis, we  applied vector autogression model to capture the interdependencies among multiple categories of crime time series. We tested for the optimal lag $p$ for VAR(p) model. The input to VAR(p) is spatio-temporal data; the output is the time series model. For some crime categories, this model can reveal the trends of their occurrences.
 
 \section{Datasets}
-Our primary dataset is a training set obtained from Kaggle, which includes 878,049 crimes in San francisco that occurred from 2003 to 2015. Every crime record was marked a category, and there are in total 39 categories. The other dataset is the demographic data of different neighborhoods in San Francisco, including population, income, race constitution, education level etc. The demographic data is provided by US Census conducted in 2010. We also searched Wikipedia for population density. 
+Our primary datasets are two spatio-temporal feature sets obtained from Kaggle, both includes crime records in San francisco that occurred from 2003 to 2015. One is labeled train data with 878,049 entries, the other is unlabeled test data. There are in total 39 categories. Another dataset is the demographic data of different neighborhoods in San Francisco, including population, income, race constitution, education level etc. The demographic data is provided by US Census conducted in 2010. We also searched Wikipedia for population density as an extra feature. 
 \subsection{Features}
 Each record in our dataset correspond to a particular crime incident, which includes following fields:
 \begin{itemize}
@@ -502,7 +502,7 @@ bool getNeighborhood(Lang, Lat, Polygon){
 For timestamps in dataset, we parsed the month\/date-of-year, hour-of-day from them. We also added season, day/night as new fields.
 
 Another feature enrichment approach is computing the log-odds defined below, where c is crime category.
-$$logodds\_c = log(\frac{c\_counts}{len(train\_data)}) - log(1 - \frac{c\_counts}{len(train\_data)})$$\\ There are around 23,000 addresses in the train dataset, which is small compared with number of crime entries. 
+$$logodds\_c = log(\frac{c\_counts}{len(train\_data)}) - log(1 - \frac{c\_counts}{len(train\_data)})$$ There are around 23,000 addresses in the train dataset, which is small compared with number of crime entries. For each address, we calculate its logodds on every crime category. We also calculate the overall logodds of San Francisco for new addresses in test data. 
 
 \subsubsection{Scaling and Transformation}
 Some fields are skewed, with log transformation their distribution are more close to Gaussian Distribution. Figure 3 shows the log transformation of percapita-income. Similar transformations are performed on median-rent and population density.
@@ -556,14 +556,14 @@ An Augmented Dickey-Fuller unit root test \cite{4} is often employ to test stati
 We have 878049 labeled spatio-temporal crime records, of which half are trained as training dataset, the rest are treated as test data to verify the accuracy of our classifiers. For each model, there are two kinds of prediction results. One is binomial labels(0 or 1) for each category, the other is possibility of each category. 
 Following table displays the mean accuracy and log loss of each classification algorithms. For Random Forest and Gradient Boost Tree, we put the best results with highest accuracy and lowest log loss. 
 
-We tried to incorporate demographic data to enrich our feature set, as introduced in the Datasets chapter. There are 18 demographic fields. To identify their influence, we constructed a matrix whose columns are demographic data and number of each category of crime, rows are neighborhood names. We computed its correlation matrix \textit{matcorr}. For each demographic field in \textit{matcorr}, we construct an array \textit{arrcorr} of its correlation with frequencies of all categories and compute the variance of \textit{arrcorr}. The larger variance it has, the stronger influence this demographic field has on crime category. Following table list eight most influential  entries. Apart from race, we see poverty percent, median home value and population density are also prominently informative.
+We tried to incorporate demographic data to enrich our feature set, as introduced in the Datasets chapter. There are 18 demographic fields. To identify their influence, we constructed a matrix whose columns are demographic data and number of each category of crime, rows are neighborhood names. We computed its correlation matrix \textit{matcorr}. For each demographic field in \textit{matcorr}, we construct an array \textit{arrcorr} of its correlation with frequencies of all categories and compute the variance of \textit{arrcorr}. The larger variance it has, the stronger influence this demographic field has on crime category. Table 1 lists eight most influential  entries. Apart from race, we see poverty percent, median home value and population density are also prominently informative.
 \begin{table}[h]
 \centering
 \caption{Influential demographic data}
 \label{my-label}
 \begin{tabular}{|l|l|}
 \hline
-demographic feature                      & variance \\ \hline
+demographic feature                      & variance against categories \\ \hline
 latino ratio                             & 0.0282   \\ \hline
 native\_hawaiian/pacific\_Islander ratio & 0.0250   \\ \hline
 other/two\_or\_more\_races ratio         & 0.0243   \\ \hline
@@ -587,7 +587,7 @@ Gradient BoostTree  & 0.3356        & 2.1866   \\ \hline
 \end{tabular}
 \end{table}
 
-The table demonstrate that Random Forest yields the highest accuracy and Gradient BoostTree has lowest log loss. Their results did not vary much, even the plain logistic regression also reached an accuracy of 0.3258. There are in total 39 classes, the accuracy of 0.33 is actually not bad. We computed the predict-probability on the test dataset from Kaggle, which has 884263 crime unlabeled crime records. By the time of submission, we ranked 47th on the leaderboard \url{https://www.kaggle.com/c/sf-crime/leaderboard} among over 1200 submissions. 
+Table 2 demonstrates that Random Forest yields the highest accuracy and Gradient BoostTree has lowest log loss. Their results did not vary much, even the plain logistic regression also reached an accuracy of 0.3258. There are in total 39 classes, the accuracy of 0.33 is actually not bad. We computed the predict-probability on the test dataset from Kaggle, which has 884263 crime unlabeled crime records. By the time of submission, we ranked 47th on the leaderboard \url{https://www.kaggle.com/c/sf-crime/leaderboard} among over 1200 submissions. 
 
 \subsubsection{Tuning Random forest}
 Our main efforts with Random Forest was to tun the hyper-parameters to mitigate overfitting. The most relevant parameter to this task was the maximum depth of the decision trees(weak classifiers)  of which the Random Forest is composed. Besides, the number of estimators could also affect fitting results.
@@ -610,14 +610,14 @@ Considering time efficiency, we took 60 as the number of estimator for further t
 
 \subsubsection{Tuning GRBT}
 The GRBT is supposed to have superior performance than Random Forest, but is painful to tune the parameters for optimal outcome. Generally, it is better to employ more decision trees for higher prediction accuracy and lower log loss. But our experiment results in fig 7 show that the best result occurs when the n\_estimator equals to 50, and increasing it does not improve the results.
-\begin{figure}[H]
+\begin{figure}[h]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/grbt_p1.png}
 \caption{Mean accuracy and scaled log loss}
 \end{center}
 \end{figure}
-We also compared the importance of different features with the 'gini importance' and selected the 20 most important predictors as shown in fig 8. \textbf{time}(hour of day) turn out to be the most important feature. The logodds account for the majority of influential features. Year also 
-\begin{figure}[H]
+We also compared the importance of different features with the 'gini importance' and selected the 20 most important predictors as shown in fig 8. \textbf{time}(hour of day) turn out to be the most important feature. The logodds account for the majority of influential features.
+\begin{figure}[h]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/grbt_p2.png}
 \caption{Mean accuracy and scaled log loss}
@@ -626,8 +626,8 @@ We also compared the importance of different features with the 'gini importance'
 
 \subsection{Time Series}
 \subsubsection{Motivations}
-Based on the stationarity test in previous chapter, the VAR{p} model is suitable for finding trends in the crime dataset. We selected 28 categories with low ADF score, and computed the pair-wise correlation among them. Fig 9 shows the heat-map of correlation matrix which computes the Pearson's r. In the heat-map, we can find large positively correlation coefficients, for example, BURGLARY \& ASSAULT, as well as negative coefficients like DRIVING UNDER THE INFLUENCE \& VEHICLE THEFT.
-\begin{figure}[H]
+Based on the stationarity test in previous chapter, the VAR{p} model is suitable for finding trends in the crime dataset. We selected 23 categories with low ADF score as described earlier,  and computed the pair-wise correlation among them. Fig 9 shows the heat-map of correlation matrix which computes the Pearson's r. In the heat-map, we can find large positively correlation coefficients, for example, BURGLARY \& ASSAULT, as well as negative coefficients like DRIVING UNDER THE INFLUENCE \& VEHICLE THEFT.
+\begin{figure}[h]
 \begin{center}
 \includegraphics [width=0.48\textwidth]{pics/heat_map_time_series.png}
 \caption{Heatmap of time series correlation matrix }
@@ -660,8 +660,9 @@ We choose $p=2$ and AIC penalty criterion for VAR(p) model fitting. And tried th
 \end{figure}
 
 \section{Related Work}
-%TODO
+Compared to most applied machine learning problems, literature about crime prediction is more limited. However, there are still some work on: (i)predicting surges and hotspots of crimes, and (ii) understanding intrinsic patterns of criminal behavior which could help investigating cases. There are also papers helping us to build feature set. Wang et.al indicated that location and time data by itself would be insufficient for crime analysis. For instance, burglars tend to vary on time and place \cite{6} . For choice of classification algorithm, Nasridinov, et.al. \cite{7} suggested using decision trees and Bogomolov's paper \cite{8} demonstrated the superiority of Random Forest. 
 
+Regarding time series analysis, Greenberg et.al \cite{9} explored the relationship between crime and unemployment rate during half-century time scale. R Alwee et, al \cite{10} suggested the use of vector regression and autoregressive models for property crime rate forecasting.
 \section{Conclusion}
 In this paper, we worked on multi-class prediction and time series analysus on crime category in San Francisco. The dataset we employed included labeled spatio-temporal data from Kaggle and demographic data from US Census in 2010.
 
@@ -670,8 +671,7 @@ The prediction task achieved mean accuracy of around 33 percent, which ranked 47
 We performed time series analysis on the spatio-temporal data with vector autoregression model. We found the optimal $p-lag$ with AIC and BIC penalty functions. From the heat-map, the crime category time series data also reveal correlation between different categories. The ADF test demonstrated that 23 out of 39 categories have more than 95\% probability to be stationary and we fitted VAR(p) model on these categories. The VAR(p) model is also able to predict trends of category number changes.
 
 \section{Ackknowlegement}
-I would like to deeply thank Professor D. Stott Parker for his advice on feature selection and preprocessing, which facilitated my preprocessing with demographic data.\\
-
+I would like to deeply thank Professor D. Stott Parker for his advice on feature selection and preprocessing, which facilitated my preprocessing with demographic data.
 
 \begin{thebibliography}{1}
 
@@ -689,6 +689,21 @@ Said, Said E., and David A. Dickey. "Testing for unit roots in autoregressive-mo
 
 \bibitem{5}
 Seabold, Skipper, and Josef Perktold. "Statsmodels: Econometric and statistical modeling with python." Proceedings of the 9th Python in Science Conference. 2010.
+
+\bibitem{6}
+Wang, Tong, et al. "Learning to detect patterns of crime." Machine Learning and Knowledge Discovery in Databases. Springer Berlin Heidelberg, 2013. 515-530.
+
+\bibitem{7}
+Nasridinov, Aziz, Sun-Young Ihm, and Young-Ho Park. "A decision tree-based classification model for crime prediction." Information Technology Convergence. Springer Netherlands, 2013. 531-538.
+
+\bibitem{8}
+Bogomolov, Andrey, et al. "Once upon a crime: towards crime prediction from demographics and mobile data." Proceedings of the 16th international conference on multimodal interaction. ACM, 2014.
+
+\bibitem{9}
+Greenberg, David F. "Time series analysis of crime rates." Journal of Quantitative Criminology 17.4 (2001): 291-327.
+
+\bibitem{10}
+Alwee, Razana, Siti Mariyam Hj Shamsuddin, and Roselina Sallehuddin. "Hybrid support vector regression and autoregressive integrated moving average models improved by particle swarm optimization for property crime rates forecasting with economic indicators." The Scientific World Journal 2013 (2013).
 
 \end{thebibliography}
 
